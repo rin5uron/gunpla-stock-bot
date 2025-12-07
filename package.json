@@ -23,16 +23,14 @@
   "license": "MIT",
   "dependencies": {
     "@line/bot-sdk": "^9.3.0",
-    "@prisma/client": "^7.1.0",
-    "@types/express": "^5.0.6",
+    "csv-parse": "^6.1.0",
+    "csv-stringify": "^6.6.0",
     "dotenv": "^16.4.7",
     "express": "^5.2.1",
-    "pino": "^9.5.0",
     "playwright": "^1.48.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
-    "prisma": "^7.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.2"
   },

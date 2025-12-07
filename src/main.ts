@@ -1,14 +1,11 @@
 import * as dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
 import { StockChecker } from './checker';
 import { LineMessagingClient } from './lineMessaging';
-import { Target, User } from '@prisma/client';
-import { NotificationMessage, CheckResult } from './types';
+import { NotificationMessage, CheckResult, Target, StockStatus } from './types';
+import { loadTargets, loadUsers, updateTargetStatus } from './csvHelper';
 
 // 環境変数を読み込み
 dotenv.config();
-
-const prisma = new PrismaClient();
 
 /**
  * メイン処理
@@ -24,9 +21,25 @@ async function main() {
     process.exit(1);
   }
 
-  // DBから設定を読み込み
-  const targets = await prisma.target.findMany({ where: { enabled: true } });
-  const users = await prisma.user.findMany();
+  // CSVファイルから設定を読み込み
+  const targetRows = loadTargets();
+  const userRows = loadUsers();
+
+  // CSV形式からTarget型に変換
+  const targets: Target[] = targetRows.map(row => ({
+    id: row.id,
+    name: row.name,
+    url: row.url,
+    lastStatus: row.lastStatus as StockStatus,
+    enabled: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  }));
+
+  const users = userRows.map(row => ({
+    userId: row.userId,
+    displayName: row.displayName,
+  }));
 
   console.log(`📋 監視対象: ${targets.length}件`);
   console.log(`👥 通知先: ${users.length}人`);
@@ -70,12 +83,9 @@ async function main() {
         }
       }
 
-      // ターゲットの lastStatus をDBで更新
+      // ターゲットの lastStatus をCSVファイルで更新
       if (result.hasChanged) {
-        await prisma.target.update({
-          where: { id: target.id },
-          data: { lastStatus: result.currentStatus },
-        });
+        updateTargetStatus(target.id, result.currentStatus);
       }
 
       // レート制限対策：1秒待機
@@ -95,7 +105,6 @@ async function main() {
     process.exit(1);
   } finally {
     await checker.close();
-    await prisma.$disconnect();
   }
 
   console.log('✅ 処理完了');

@@ -1,5 +1,3 @@
-import { Target as PrismaTarget } from '@prisma/client';
-
 /**
  * 在庫状態
  */
@@ -46,7 +44,23 @@ export interface NotificationMessage {
   timestamp: string;
 }
 
-// PrismaのTarget型をStockStatusで上書き
-export type Target = Omit<PrismaTarget, 'lastStatus'> & {
+/**
+ * 監視対象商品
+ */
+export interface Target {
+  id: string;
+  name: string;
+  url: string;
   lastStatus: StockStatus;
-};
+  enabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+/**
+ * LINE通知先ユーザー
+ */
+export interface User {
+  userId: string;
+  displayName: string;
+}

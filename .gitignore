@@ -160,7 +160,8 @@ dist/
 .env
 .env.local
 secrets/
-config/users.json
+config/users.csv
+config/targets.csv
 *.db
 *.sqlite
 logs/
@@ -178,6 +179,3 @@ tmp/
 
 # Test output
 test-output/
-
-/src/generated/prisma
-.env

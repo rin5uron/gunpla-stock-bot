@@ -1,5 +1,5 @@
 import { StockChecker } from './src/checker';
-import { Target } from './src/types';
+import { Target, StockStatus } from './src/types';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -22,7 +22,7 @@ async function testStockChecker() {
       id: 'test-1',
       name: '商品1',
       url: 'https://p-bandai.jp/item/item-1000242190/',
-      lastStatus: 'out_of_stock',
+      lastStatus: 'out_of_stock' as StockStatus,
       enabled: true,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -31,7 +31,7 @@ async function testStockChecker() {
       id: 'test-2',
       name: '商品2',
       url: 'https://p-bandai.jp/item/item-1000147064/',
-      lastStatus: 'out_of_stock',
+      lastStatus: 'out_of_stock' as StockStatus,
       enabled: true,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -40,7 +40,7 @@ async function testStockChecker() {
       id: 'test-3',
       name: '商品3',
       url: 'https://p-bandai.jp/item/item-1000212520/',
-      lastStatus: 'out_of_stock',
+      lastStatus: 'out_of_stock' as StockStatus,
       enabled: true,
       createdAt: new Date(),
       updatedAt: new Date(),
