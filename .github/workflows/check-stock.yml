@@ -1,0 +1,39 @@
+name: ガンプラ在庫チェック
+
+on:
+  # 30分おきに自動実行
+  schedule:
+    - cron: '*/30 * * * *'
+
+  # 手動実行も可能
+  workflow_dispatch:
+
+jobs:
+  check-stock:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: リポジトリをチェックアウト
+        uses: actions/checkout@v4
+
+      - name: Node.js をセットアップ
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 依存関係をインストール
+        run: npm ci
+
+      - name: Playwright ブラウザをインストール
+        run: npx playwright install --with-deps chromium
+      
+      - name: Prisma Client を生成
+        run: npx prisma generate
+
+      - name: 在庫チェックを実行
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.LINE_CHANNEL_ACCESS_TOKEN }}
+          TZ: Asia/Tokyo
+        run: npm run start

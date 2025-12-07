@@ -1,0 +1,42 @@
+{
+  "name": "gunpla-stock-bot",
+  "version": "1.0.0",
+  "description": "プレミアムバンダイのガンプラ在庫を監視し、LINE Messaging APIで通知するBot",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "ts-node src/main.ts",
+    "build": "tsc",
+    "server": "node dist/server.js",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seed.ts"
+  },
+  "keywords": [
+    "gunpla",
+    "stock",
+    "notification",
+    "line",
+    "playwright"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@line/bot-sdk": "^9.3.0",
+    "@prisma/client": "^7.1.0",
+    "@types/express": "^5.0.6",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "pino": "^9.5.0",
+    "playwright": "^1.48.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.1",
+    "prisma": "^7.1.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
