@@ -39,7 +39,7 @@
 
 4.  LINE通知先ユーザーを設定します。
     - `config/users.csv` を編集し、通知先のLINE ユーザーIDを追加します。
-    - LINE ユーザーIDの取得方法は [LINE Developersドキュメント](https://developers.line.biz/ja/docs/messaging-api/getting-user-ids/) を参照してください。
+    - LINE ユーザーIDの取得方法は  を参照してください。
     ```csv
     userId,displayName
     U1234567890abcdef1234567890abcdef,あなたの名前

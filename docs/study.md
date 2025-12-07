@@ -18,8 +18,6 @@
 
 #### 参考資料
 - [LINE Developersドキュメント](https://developers.line.biz/ja/docs/messaging-api/getting-user-ids/)
-- 画像資料
-  ![robots.txt](./images/robots.txt.png)
 
 ---
 
@@ -30,6 +28,9 @@
 - **robots.txt**: クローラー（ロボット）のアクセスを制御するためのファイル。
   - 例: `https://slo-map.com/robots.txt`
 - スクレイピングの善悪は、**悪意の有無**と**サーバーへの負荷**が重要な判断基準となる。
+- 画像資料
+  ![robots.txt](./images/robots.txt.png)
+
 
 #### 岡崎市立中央図書館事件（Librahack事件）
 

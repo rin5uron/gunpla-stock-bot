@@ -55,7 +55,7 @@
 
 2.  **Webhook URLをコピーする**:
     - 画面に `Forwarding` という項目が表示されます。
-    - `https://` から始まるURL（例: `https://1a2b-3c4d-5e6f.ngrok-free.app`）をコピーします。これが一時的にあなたのPCにつながるインターネット上の住所になります。
+    - `https://` から始まるURL（例: `https://1a2b-3c4d-5e6f.ngrok-free.app`）をコピーします。これが一時的にあなたのPCにつながるインターネット上の住所になります。：https://yareli-
 
 ### 4. LINE Developersコンソールで設定する
 
@@ -63,7 +63,7 @@
 2.  あなたのBotのプロバイダーとチャネルを選択します。
 3.  「Messaging API設定」タブを開きます。
 4.  「Webhook URL」の「編集」ボタンを押します。
-5.  先ほどコピーした **ngrokのURL** の後ろに `/webhook` を付け足したものを貼り付けます。
+5.  先ほどコピーした **のURL** の後ろに `/webhook` を付け足したものを貼り付けます。
     - 例: `https://1a2b-3c4d-5e6f.ngrok-free.app/webhook`
 6.  「更新」ボタンを押します。
 7.  「Webhookの利用」のトグルスイッチを **オン** にします。
