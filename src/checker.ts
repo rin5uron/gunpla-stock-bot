@@ -6,7 +6,8 @@ export class StockChecker {
   private page: Page | null = null;
 
   async init(): Promise<void> {
-    this.browser = await chromium.launch({ headless: false });
+    // GitHub Actions等のサーバー環境では headless: true が必須
+    this.browser = await chromium.launch({ headless: true });
     this.page = await this.browser.newPage();
     console.log('🌐 ブラウザを起動しました');
   }
