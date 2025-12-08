@@ -111,6 +111,47 @@ ngrokのauthtokenが設定されていないか、無効なトークンが設定
 
 ## Prisma関連のエラー
 
+### @prisma/clientモジュールが見つからない
+
+**エラーメッセージ:**
+```
+TSError: ⨯ Unable to compile TypeScript:
+src/lineMessaging.ts(2,22): error TS2307: Cannot find module '@prisma/client' or its corresponding type declarations.
+```
+
+**原因:**
+コード内で `@prisma/client` をインポートしているが、実際にはPrismaを使用していない（または `package.json` に含まれていない）。
+過去の開発で残った不要なインポート文が原因。
+
+**解決方法:**
+
+1. **Prismaを使わない場合（推奨）**
+   
+   不要なインポートを削除し、自分で定義した型を使う：
+   ```typescript
+   // 変更前
+   import { User } from '@prisma/client';
+   
+   // 変更後
+   import { User } from './types';
+   ```
+
+2. **Prismaを使う場合**
+   ```bash
+   # Prismaをインストール
+   npm install @prisma/client
+   npm install -D prisma
+   
+   # Prisma Clientを生成
+   npx prisma generate
+   ```
+
+**注意点:**
+- このプロジェクトではCSVファイルでユーザー管理しているため、Prismaは不要です
+- `src/types.ts` に `User` 型が定義されているので、そちらを使用してください
+
+---
+
 ### Prisma Clientの生成エラー
 
 **エラーメッセージ:**
@@ -134,6 +175,78 @@ npx prisma db push
 ---
 
 ## GitHub Actions関連のエラー
+
+### Playwrightで「XServer running」エラー（headlessモード）
+
+**エラーメッセージ:**
+```
+Looks like you launched a headed browser without having a XServer running.
+Set either 'headless: true' or use 'xvfb-run <your-playwright-app>' before running Playwright.
+```
+
+**原因:**
+Playwrightが `headless: false`（画面表示モード）で起動しようとしているが、GitHub Actionsはサーバー環境のため画面（Xサーバー）がない。
+
+**解決方法:**
+
+`src/checker.ts` の `chromium.launch()` を `headless: true` に変更：
+
+```typescript
+// 変更前
+this.browser = await chromium.launch({ headless: false });
+
+// 変更後
+this.browser = await chromium.launch({ headless: true });
+```
+
+**補足:**
+| モード | 説明 | 使う場面 |
+|--------|------|----------|
+| `headless: true` | 画面なしで動く | GitHub Actions、サーバー環境 |
+| `headless: false` | 画面に表示される | ローカルでデバッグしたい時 |
+
+---
+
+### package-lock.jsonが見つからない（cache: 'npm'エラー）
+
+**エラーメッセージ:**
+```
+Error: Dependencies lock file is not found in /home/runner/work/gunpla-stock-bot/gunpla-stock-bot. Supported file patterns: package-lock.json,npm-shrinkwrap.json,yarn.lock
+```
+
+**原因:**
+`actions/setup-node@v4` で `cache: 'npm'` オプションを使用すると、`package-lock.json` を探してキャッシュに使おうとします。
+このファイルがGitにコミットされていない、またはリモートにpushされていない場合にエラーが発生します。
+
+**解決方法:**
+
+1. **`package-lock.json` がGitにコミットされているか確認**
+   ```bash
+   git ls-files | grep package-lock.json
+   ```
+
+2. **コミットされていない場合は追加**
+   ```bash
+   git add package-lock.json
+   git commit -m "package-lock.jsonを追加"
+   git push origin main
+   ```
+
+3. **または、キャッシュを使わない設定に変更**
+   `.github/workflows/check-stock.yml` から `cache: 'npm'` の行を削除：
+   ```yaml
+   - name: Node.js をセットアップ
+     uses: actions/setup-node@v4
+     with:
+       node-version: '20'
+       # cache: 'npm' ← この行を削除
+   ```
+
+**注意点:**
+- `.gitignore` に `package-lock.json` が含まれていないか確認してください
+- キャッシュを使わなくても動作しますが、毎回依存関係をダウンロードするため少し遅くなります
+
+---
 
 ### 在庫チェックが失敗する
 
