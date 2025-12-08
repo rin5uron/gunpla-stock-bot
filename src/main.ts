@@ -100,6 +100,26 @@ async function main() {
     console.log(`  変化あり: ${results.filter(r => r.hasChanged).length}件`);
     console.log(`  在庫復活: ${results.filter(r => r.isStockRestored).length}件`);
 
+    // 【テスト用】在庫復活がなかった場合も通知を送る
+    const stockRestoredCount = results.filter(r => r.isStockRestored).length;
+    if (stockRestoredCount === 0) {
+      console.log('📤 テスト通知: 在庫変化なしの通知を送信します');
+      
+      const summaryMessage: NotificationMessage = {
+        title: '📋 在庫チェック完了',
+        body: createSummaryBody(results),
+        url: 'https://p-bandai.jp/',
+        timestamp: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
+      };
+
+      try {
+        await lineClient.sendPushMessage(users, summaryMessage);
+        console.log('✅ テスト通知送信完了');
+      } catch (error) {
+        console.error('❌ テスト通知送信失敗', error);
+      }
+    }
+
   } catch (error) {
     console.error('❌ エラーが発生しました', error);
     process.exit(1);
@@ -108,6 +128,25 @@ async function main() {
   }
 
   console.log('✅ 処理完了');
+}
+
+/**
+ * 【テスト用】サマリー本文を作成
+ */
+function createSummaryBody(results: CheckResult[]): string {
+  const statusMap: { [key: string]: string } = {
+    in_stock: '🟢 在庫あり',
+    out_of_stock: '🔴 在庫なし',
+    pre_order: '🟡 予約受付中',
+    sold_out: '⚫ 完売',
+    unknown: '❓ 不明',
+  };
+
+  const lines = results.map(r => 
+    `・${r.name}\n  ${statusMap[r.currentStatus] || r.currentStatus}`
+  );
+
+  return `在庫変化はありませんでした。\n\n${lines.join('\n\n')}`;
 }
 
 /**
