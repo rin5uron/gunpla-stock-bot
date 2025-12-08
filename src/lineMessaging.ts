@@ -1,6 +1,5 @@
 import { Client, MessageAPIResponseBase } from '@line/bot-sdk';
-import { User } from '@prisma/client';
-import { NotificationMessage } from './types';
+import { NotificationMessage, User } from './types';
 
 /**
  * LINE Messaging API クライアント
