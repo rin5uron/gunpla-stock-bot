@@ -20,6 +20,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          # キャッシュは使用しない（package-lock.jsonの問題を回避）
 
       - name: 依存関係をインストール
         run: npm ci
