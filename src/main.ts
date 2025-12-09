@@ -143,8 +143,8 @@ async function main() {
 
       // 在庫状況をまとめてBroadcast
       const statusMessage: NotificationMessage = {
-        title: '📊 現在の在庫状況',
-        body: createStatusBody(results),
+        title: '📊 テスト用手動配信',
+        body: `これはテスト用の手動配信です。\n現在の実際の在庫を表示しています。\n\n${createStatusBody(results)}`,
         url: 'https://p-bandai.jp/',
         timestamp: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
       };
@@ -240,26 +240,6 @@ async function main() {
     console.log(`  チェック済み: ${results.length}件`);
     console.log(`  変化あり: ${results.filter(r => r.hasChanged).length}件`);
     console.log(`  在庫復活: ${results.filter(r => r.isStockRestored).length}件`);
-
-    // 【テスト用】在庫復活がなかった場合も通知を送る（users.csvの人だけ）
-    const stockRestoredCount = results.filter(r => r.isStockRestored).length;
-    if (stockRestoredCount === 0 && users.length > 0) {
-      console.log('📤 テスト通知: 在庫変化なしの通知を送信します（users.csvの人のみ）');
-      
-      const summaryMessage: NotificationMessage = {
-        title: '📋 在庫チェック完了',
-        body: createSummaryBody(results),
-        url: 'https://p-bandai.jp/',
-        timestamp: new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }),
-      };
-
-      try {
-        await lineClient.sendPushMessage(users, summaryMessage);
-        console.log('✅ テスト通知送信完了');
-      } catch (error) {
-        console.error('❌ テスト通知送信失敗', error);
-      }
-    }
 
   } catch (error) {
     console.error('❌ エラーが発生しました', error);
