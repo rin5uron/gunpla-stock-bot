@@ -14,7 +14,24 @@ export class LineMessagingClient {
   }
 
   /**
-   * 複数ユーザーにプッシュメッセージを送信
+   * 友達全員にブロードキャストメッセージを送信（在庫復活通知用）
+   * ※ユーザーID不要、Botの友達全員に届く
+   */
+  async sendBroadcastMessage(message: NotificationMessage): Promise<void> {
+    const flexMessage = this.createFlexMessage(message);
+
+    try {
+      await this.client.broadcast(flexMessage);
+      console.log('✅ ブロードキャスト送信成功（友達全員に通知）');
+    } catch (error) {
+      console.error('❌ ブロードキャスト送信失敗', error);
+      throw error;
+    }
+  }
+
+  /**
+   * 指定ユーザーにプッシュメッセージを送信（テスト通知用）
+   * ※users.csvに登録したユーザーのみに送信
    */
   async sendPushMessage(
     users: User[],

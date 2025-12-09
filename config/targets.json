@@ -1,9 +1,16 @@
 [
   {
-    "id": "HG 1/144 ガンダムフロント",
-    "name": "初期設定",
+    "id": "item-1",
+    "name": "HG 1/144 インフィニットジャスティス",
+    "url": "https://p-bandai.jp/item/item-1000213431/",
+    "lastStatus": "out_of_stock",
+    "enabled": true
+
+  }
+  {    
+    "id": "item-2",
+    "name": "HG 1/144 セイラ専用軽キャノン",
     "url": "https://p-bandai.jp/item/item-1000233131/",
     "lastStatus": "out_of_stock",
     "enabled": true
   }
-]

@@ -45,8 +45,9 @@ gunpla-stock-bot/
 │   └── users.csv                    # LINE通知先ユーザーリスト
 ├── docs/
 │   ├── SETUP.md                     # セットアップガイド
-│   ├── SPECIFICATION.md             # このファイル（仕様書）
-│   └── TESTING.md                   # テスト方法
+│   ├── spec.md                      # このファイル（仕様書）
+│   ├── TESTING.md                   # テスト方法
+│   └── GET_USER_ID.md               # ユーザーID取得ガイド
 ├── src/
 │   ├── main.ts                      # エントリーポイント
 │   ├── checker.ts                   # 在庫チェッカークラス
@@ -78,16 +79,22 @@ item-1,商品名,https://p-bandai.jp/item/item-XXXXXXXXX/,out_of_stock,true
 ```
 
 **カラム説明**:
-- `id`: 商品の一意識別子（任意の文字列、重複不可）
-- `name`: 商品名（通知メッセージに表示される）
-- `url`: プレミアムバンダイの商品ページURL
-- `lastStatus`: 最終チェック時の在庫状態
-  - `in_stock`: 在庫あり
-  - `out_of_stock`: 在庫なし
-  - `pre_order`: 予約受付中
-  - `sold_out`: 完売
-  - `unknown`: 不明（エラー時）
-- `enabled`: 監視の有効/無効（`true` / `false`）
+| カラム | 説明 |
+|--------|------|
+| `id` | 商品の一意識別子（任意の文字列、重複不可） |
+| `name` | 商品名（通知メッセージに表示される） |
+| `url` | プレミアムバンダイの商品ページURL |
+| `lastStatus` | 最終チェック時の在庫状態（下表参照） |
+| `enabled` | 監視の有効/無効（`true` / `false`） |
+
+**在庫状態（lastStatus）の種類**:
+| 値 | 意味 |
+|----|------|
+| `in_stock` | 在庫あり |
+| `out_of_stock` | 在庫なし |
+| `pre_order` | 予約受付中 |
+| `sold_out` | 完売 |
+| `unknown` | 不明（エラー時） |
 
 **注意事項**:
 - このファイルは `.gitignore` に含まれているため、Gitにコミットされません
@@ -97,7 +104,9 @@ item-1,商品名,https://p-bandai.jp/item/item-XXXXXXXXX/,out_of_stock,true
 ---
 
 #### `config/users.csv`
-**役割**: LINE通知先ユーザーの管理
+**役割**: LINE通知先ユーザーの管理（テスト通知用）
+
+> **注意**: 在庫復活通知は **Broadcast（友達全員）** で送信されるため、このファイルは主にテスト通知用です。
 
 **形式**:
 ```csv
@@ -106,8 +115,10 @@ U1234567890abcdef1234567890abcdef,ユーザー名
 ```
 
 **カラム説明**:
-- `userId`: LINE ユーザーID（Uから始まる33文字の文字列）
-- `displayName`: 表示名（管理用、通知には使用されない）
+| カラム | 説明 |
+|--------|------|
+| `userId` | LINE ユーザーID（Uから始まる33文字の文字列） |
+| `displayName` | 表示名（管理用、通知には使用されない） |
 
 **LINE ユーザーIDの取得方法**:
 
@@ -129,7 +140,7 @@ LINEのユーザーIDは、Bot側から一覧で取得することはできま�
 ### 📁 src/ - ソースコード
 
 #### `src/main.ts`
-**役割**: プログラムのエントリーポイント
+**役割**: プログラムのエントリーポイント（最初に実行されるファイル）
 
 **処理フロー**:
 1. 環境変数の読み込み（`dotenv`）
@@ -141,8 +152,22 @@ LINEのユーザーIDは、Bot側から一覧で取得することはできま�
 7. 実行結果のサマリーを表示
 
 **実行コマンド**:
+
+| コマンド | 説明 | 送信先 |
+|----------|------|--------|
+| `npm run start` | 通常の在庫チェック | 在庫復活 → 友達全員 / テスト → users.csv |
+| `npm run test:broadcast` | 一斉配信テスト | **友達全員** |
+| `npm run test:push` | 指定ユーザーテスト | users.csvの人だけ |
+
 ```bash
+# 通常実行
 npm run start
+
+# 一斉配信テスト（友達全員に送信）
+npm run test:broadcast
+
+# 指定ユーザーテスト（users.csvの人だけに送信）
+npm run test:push
 ```
 
 **ログ出力例**:
@@ -196,17 +221,12 @@ npm run start
 
 ##### `extractStockStatus(page: Page): Promise<StockStatus>`
 - ページのbodyテキストから在庫状態を判定します
-- **現在の実装**:
+- **判定ロジック**:
   - `カートに入れる` または `購入手続き` → `in_stock`
   - `予約する` または `予約受付中` → `pre_order`
   - `在庫がありません` または `在庫なし` → `out_of_stock`
   - `完売` または `受付終了` → `sold_out`
   - 上記に該当しない → `unknown`
-
-**⚠️ 改善が必要な点**:
-- bodyテキスト全体で判定しているため、精度が低い
-- より具体的なセレクタ（ボタン要素など）を使うべき
-- 詳細は [TESTING.md](./TESTING.md) を参照
 
 ##### `isStockRestored(prev: StockStatus, curr: StockStatus): boolean`
 - 在庫が復活したかを判定します
@@ -246,11 +266,17 @@ npm run start
 
 **主要メソッド**:
 
-##### `sendFlexMessage(users: User[], message: NotificationMessage): Promise<void>`
-- Flex Messageを使って在庫復活通知を送信します
+##### `sendBroadcastMessage(message: NotificationMessage): Promise<void>`
+- **友達全員**にFlex Messageを送信します（在庫復活通知用）
+- ユーザーIDの指定は不要（Botの友達全員に届く）
+- **引数**: `message` - 通知メッセージ
+
+##### `sendPushMessage(users: User[], message: NotificationMessage): Promise<void>`
+- **指定ユーザーのみ**にテキストメッセージを送信します（テスト通知用）
+- `users.csv` に登録されたユーザーのみに送信
 - **引数**:
   - `users`: 通知先ユーザーリスト
-  - `message`: 通知メッセージ（タイトル、本文、URL、タイムスタンプ）
+  - `message`: 通知メッセージ
 
 **Flex Messageの内容**:
 - ヘッダー: 商品名
@@ -259,8 +285,11 @@ npm run start
 - タイムスタンプ
 
 **LINE Messaging API仕様**:
-- エンドポイント: `https://api.line.me/v2/bot/message/multicast`
-- 一度に最大500ユーザーまで送信可能
+
+| API | 説明 | 用途 |
+|-----|------|------|
+| `broadcast` | 友達全員に送信（ユーザーID不要） | 在庫復活通知 |
+| `pushMessage` | 指定ユーザーに送信（ユーザーID必要） | テスト通知 |
 
 ---
 
@@ -287,8 +316,6 @@ interface Target {
   url: string;
   lastStatus: StockStatus;
   enabled: boolean;
-  createdAt: Date;
-  updatedAt: Date;
 }
 ```
 
@@ -353,7 +380,7 @@ interface NotificationMessage {
 [src/main.ts 実行開始]
         ↓
 [config/targets.csv 読み込み] ← CSVファイル
-[config/users.csv 読み込み]   ← CSVファイル
+[config/users.csv 読み込み]   ← CSVファイル（テスト用）
         ↓
 [StockChecker初期化]
 [Playwrightブラウザ起動]
@@ -363,10 +390,13 @@ interface NotificationMessage {
   ├─ 在庫状態を判定
   ├─ 前回の状態と比較
   └─ 在庫復活を検知？
-        ├─ YES → LINE通知送信
+        ├─ YES → Broadcast（友達全員に通知）
         └─ NO  → 次の商品へ
         ↓
 [lastStatusをCSVに書き戻し] → config/targets.csv更新
+        ↓
+[在庫復活なし？]
+  └─ YES → pushMessage（users.csvの人にテスト通知）
         ↓
 [ブラウザ終了]
 [実行完了]
@@ -382,6 +412,8 @@ interface NotificationMessage {
 
 ```typescript
 const bodyText = await page.textContent('body');
+if (!bodyText) return 'unknown';
+
 const normalized = bodyText.replace(/\s+/g, '').toLowerCase();
 
 if (normalized.includes('カートに入れる') || normalized.includes('購入手続き'))
@@ -396,15 +428,11 @@ if (normalized.includes('完売') || normalized.includes('受付終了'))
 return 'unknown';
 ```
 
-### 問題点
+### 今後の改善点
 
-1. **精度が低い**: ページ全体のテキストで判定しているため、誤判定の可能性
-2. **脆弱性**: プレミアムバンダイのサイト構造変更に弱い
-3. **テキストベース**: より堅牢なセレクタ（ボタン要素など）を使うべき
-
-### 改善案
-
-詳細は [TESTING.md](./TESTING.md) の「在庫判定ロジックの改善」セクションを参照してください。
+1. **精度向上**: ページ全体のテキストで判定しているため、より具体的なセレクタ（ボタン要素など）を使うとより正確になる
+2. **サイト変更対応**: プレミアムバンダイのサイト構造が変わった場合の対応が必要
+3. **エラーハンドリング**: ネットワークエラー時の再試行処理
 
 ---
 
@@ -460,3 +488,4 @@ test-output/            # テスト時のHTML出力
 - [LINE Messaging APIドキュメント](https://developers.line.biz/ja/docs/messaging-api/)
 - [GitHub Actionsドキュメント](https://docs.github.com/ja/actions)
 - [csv-parseドキュメント](https://csv.js.org/parse/)
+

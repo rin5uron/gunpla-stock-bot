@@ -1,4 +1,3 @@
 id,name,url,lastStatus,enabled
-test-1,商品1,https://p-bandai.jp/item/item-1000242190/,out_of_stock,true
-test-2,商品2,https://p-bandai.jp/item/item-1000147064/,out_of_stock,true
-test-3,商品3,https://p-bandai.jp/item/item-1000212520/,out_of_stock,true
+item-1,HG 1/144 インフィニットジャスティス,https://p-bandai.jp/item/item-1000213431/,out_of_stock,true
+item-2,HG 1/144 セイラ専用軽キャノン,https://p-bandai.jp/item/item-1000233131/,out_of_stock,true
