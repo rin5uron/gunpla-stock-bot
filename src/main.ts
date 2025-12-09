@@ -263,9 +263,11 @@ function createSummaryBody(results: CheckResult[]): string {
     unknown: '❓ 不明',
   };
 
-  const lines = results.map(r => 
-    `・${r.name}\n  ${statusMap[r.currentStatus] || r.currentStatus}`
-  );
+  const lines = results.map(r => {
+    const status = statusMap[r.currentStatus] || r.currentStatus;
+    const note = r.currentStatus === 'unknown' ? '（詳しくは商品ページをご覧ください）' : '';
+    return `・${r.name}\n  ${status}${note}`;
+  });
 
   return `在庫変化はありませんでした。\n\n${lines.join('\n\n')}`;
 }
@@ -282,9 +284,11 @@ function createStatusBody(results: CheckResult[]): string {
     unknown: '❓ 不明',
   };
 
-  const lines = results.map(r => 
-    `・${r.name}\n  ${statusMap[r.currentStatus] || r.currentStatus}`
-  );
+  const lines = results.map(r => {
+    const status = statusMap[r.currentStatus] || r.currentStatus;
+    const note = r.currentStatus === 'unknown' ? '（詳しくは商品ページをご覧ください）' : '';
+    return `・${r.name}\n  ${status}${note}`;
+  });
 
   return `監視中の商品の在庫状況です。\n\n${lines.join('\n\n')}`;
 }
@@ -301,7 +305,10 @@ function formatStatusChange(prev: string, curr: string): string {
     unknown: '不明',
   };
 
-  return `${statusMap[prev] || prev} → ${statusMap[curr] || curr}`;
+  const changeText = `${statusMap[prev] || prev} → ${statusMap[curr] || curr}`;
+  const note = curr === 'unknown' ? '\n\n※詳しくは商品ページをご覧ください' : '';
+
+  return `${changeText}${note}`;
 }
 
 /**
